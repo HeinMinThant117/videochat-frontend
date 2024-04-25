@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 let localStream: MediaStream | null = null;
 let pc: RTCPeerConnection | null = null;
@@ -6,6 +6,9 @@ let pc: RTCPeerConnection | null = null;
 const signalling = new BroadcastChannel("webrtc");
 
 const App = () => {
+  const [startDisabled, setStartDisabled] = useState(false);
+  const [hangupDisabled, setHangupDisabled] = useState(true);
+
   const localVidRef = useRef(null);
   const remoteVidRef = useRef(null);
 
@@ -62,6 +65,8 @@ const App = () => {
     localVidRef.current.srcObject = localStream;
 
     signalling?.postMessage({ type: "ready" });
+    setStartDisabled(true);
+    setHangupDisabled(false);
   };
 
   const handleHangup = async () => {
@@ -76,6 +81,9 @@ const App = () => {
     }
     localStream.getTracks().forEach((track) => track.stop());
     localStream = null;
+
+    setStartDisabled(false);
+    setHangupDisabled(true);
   }
 
   function createPeerConnection() {
@@ -168,14 +176,16 @@ const App = () => {
 
       <div className="flex gap-x-2 mt-4 font-bold">
         <button
+          disabled={startDisabled}
           onClick={handleCallStart}
-          className="border px-4 py-2 text-white bg-blue-500"
+          className={`border px-4 py-2 text-white bg-blue-500 ${startDisabled ? "opacity-50" : "opacity-100"}`}
         >
           Start Call
         </button>
         <button
+          disabled={hangupDisabled}
           onClick={handleHangup}
-          className="border px-4 py-2 text-white bg-red-500"
+          className={`border px-4 py-2 text-white bg-red-500 ${hangupDisabled ? "opacity-50" : "opacity-100"}`}
         >
           Hangup
         </button>
