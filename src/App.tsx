@@ -1,17 +1,13 @@
 import { useEffect, useRef } from "react";
 
-let localStream: MediaStream;
-let pc: RTCPeerConnection;
+let localStream: MediaStream | null = null;
+let pc: RTCPeerConnection | null = null;
 
 const signalling = new BroadcastChannel("webrtc");
 
 const App = () => {
-  // const [signalling, setSignalling] = useState<BroadcastChannel | null>(null);
-
   const localVidRef = useRef(null);
   const remoteVidRef = useRef(null);
-
-  const titleRef = useRef(null);
 
   useEffect(() => {
     const listenSignalling = (e) => {
@@ -40,6 +36,9 @@ const App = () => {
           makeCall();
           break;
         case "bye":
+          if (pc) {
+            hangup();
+          }
           break;
         default:
           console.log("unhandled", e);
@@ -64,6 +63,20 @@ const App = () => {
 
     signalling?.postMessage({ type: "ready" });
   };
+
+  const handleHangup = async () => {
+    hangup();
+    signalling.postMessage({ type: "bye" });
+  };
+
+  async function hangup() {
+    if (pc) {
+      pc.close();
+      pc = null;
+    }
+    localStream.getTracks().forEach((track) => track.stop());
+    localStream = null;
+  }
 
   function createPeerConnection() {
     pc = new RTCPeerConnection();
@@ -94,7 +107,7 @@ const App = () => {
     console.log("Offer : ", offer);
     signalling?.postMessage({ type: "mog" });
     signalling?.postMessage({ type: "offer", sdp: offer.sdp });
-    await pc.setLocalDescription(offer);
+    await pc?.setLocalDescription(offer);
   }
 
   async function handleOffer(offer) {
@@ -108,7 +121,7 @@ const App = () => {
 
     const answer = await pc.createAnswer();
     signalling?.postMessage({ type: "answer", sdp: answer.sdp });
-    await pc.setLocalDescription(answer);
+    await pc?.setLocalDescription(answer);
   }
 
   async function handleAnswer(answer) {
@@ -135,9 +148,7 @@ const App = () => {
 
   return (
     <div>
-      <h1 ref={titleRef} className="font-bold text-4xl my-6">
-        This is a video chat app
-      </h1>
+      <h1 className="font-bold text-4xl my-6">This is a video chat app</h1>
       <div className="flex gap-x-4">
         <video
           autoPlay
@@ -162,7 +173,10 @@ const App = () => {
         >
           Start Call
         </button>
-        <button className="border px-4 py-2 text-white bg-red-500">
+        <button
+          onClick={handleHangup}
+          className="border px-4 py-2 text-white bg-red-500"
+        >
           Hangup
         </button>
       </div>
