@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { MutableRefObject, useEffect, useRef, useState } from "react";
 
 let localStream: MediaStream | null = null;
 let pc: RTCPeerConnection | null = null;
@@ -9,11 +9,11 @@ const App = () => {
   const [startDisabled, setStartDisabled] = useState(false);
   const [hangupDisabled, setHangupDisabled] = useState(true);
 
-  const localVidRef = useRef(null);
-  const remoteVidRef = useRef(null);
+  const localVidRef: MutableRefObject<HTMLVideoElement | null> = useRef(null);
+  const remoteVidRef: MutableRefObject<HTMLVideoElement | null> = useRef(null);
 
   useEffect(() => {
-    const listenSignalling = (e) => {
+    const listenSignalling = (e: MessageEvent<any>) => {
       if (!localStream) {
         console.log("not ready yet");
         return;
@@ -62,7 +62,9 @@ const App = () => {
       audio: true,
     });
 
-    localVidRef.current.srcObject = localStream;
+    if (localVidRef.current) {
+      localVidRef.current.srcObject = localStream;
+    }
 
     signalling?.postMessage({ type: "ready" });
     setStartDisabled(true);
@@ -79,19 +81,26 @@ const App = () => {
       pc.close();
       pc = null;
     }
-    localStream.getTracks().forEach((track) => track.stop());
+    localStream?.getTracks().forEach((track) => track.stop());
     localStream = null;
 
     setStartDisabled(false);
     setHangupDisabled(true);
   }
 
-  function createPeerConnection() {
+  function createPeerConnection(): RTCPeerConnection {
     pc = new RTCPeerConnection();
     pc.onicecandidate = (e) => {
-      const message = {
+      const message: {
+        type: string;
+        candidate: string | null;
+        sdpMid: string | null;
+        sdpMLineIndex: number | null;
+      } = {
         type: "candidate",
         candidate: null,
+        sdpMid: null,
+        sdpMLineIndex: null,
       };
       if (e.candidate) {
         message.candidate = e.candidate.candidate;
@@ -102,29 +111,39 @@ const App = () => {
     };
 
     pc.ontrack = (e) => {
-      console.log(e);
-      remoteVidRef.current.srcObject = e.streams[0];
+      if (remoteVidRef.current) {
+        remoteVidRef.current.srcObject = e.streams[0];
+      }
     };
-    localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+
+    localStream?.getTracks().forEach((track) => {
+      if (localStream) {
+        pc?.addTrack(track, localStream);
+      }
+    });
+
+    return pc;
   }
 
   async function makeCall() {
     createPeerConnection();
 
-    const offer = await pc.createOffer();
+    const offer = await pc?.createOffer();
     console.log("Offer : ", offer);
-    signalling?.postMessage({ type: "mog" });
-    signalling?.postMessage({ type: "offer", sdp: offer.sdp });
-    await pc?.setLocalDescription(offer);
+    if (offer) {
+      signalling?.postMessage({ type: "mog" });
+      signalling?.postMessage({ type: "offer", sdp: offer.sdp });
+      await pc?.setLocalDescription(offer);
+    }
   }
 
-  async function handleOffer(offer) {
+  async function handleOffer(offer: RTCSessionDescriptionInit) {
     if (pc) {
       console.error("existing peer connection");
       return;
     }
 
-    createPeerConnection();
+    pc = createPeerConnection();
     await pc.setRemoteDescription(offer);
 
     const answer = await pc.createAnswer();
@@ -132,7 +151,7 @@ const App = () => {
     await pc?.setLocalDescription(answer);
   }
 
-  async function handleAnswer(answer) {
+  async function handleAnswer(answer: RTCSessionDescriptionInit) {
     if (!pc) {
       console.error("no peer connection");
       return;
@@ -141,14 +160,14 @@ const App = () => {
     await pc.setRemoteDescription(answer);
   }
 
-  async function handleCandidate(candidate) {
+  async function handleCandidate(candidate: RTCIceCandidateInit | undefined) {
     if (!pc) {
       console.error("no peer connection");
       return;
     }
 
-    if (!candidate.candidate) {
-      await pc.addIceCandidate(null);
+    if (!candidate?.candidate) {
+      await pc.addIceCandidate(undefined);
     } else {
       await pc.addIceCandidate(candidate);
     }
