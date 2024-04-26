@@ -1,4 +1,5 @@
 import { MutableRefObject, useEffect, useRef, useState } from "react";
+import { socket } from "./socket";
 
 let localStream: MediaStream | null = null;
 let pc: RTCPeerConnection | null = null;
@@ -13,40 +14,96 @@ const App = () => {
   const remoteVidRef: MutableRefObject<HTMLVideoElement | null> = useRef(null);
 
   useEffect(() => {
-    const listenSignalling = (e: MessageEvent<any>) => {
+    socket.on("offer", (e) => {
       if (!localStream) {
         console.log("not ready yet");
         return;
       }
+      handleOffer(e);
+    });
 
-      switch (e.data.type) {
-        case "offer":
-          console.log("Offer this is.");
-          handleOffer(e.data);
-          break;
-        case "answer":
-          handleAnswer(e.data);
-          break;
-        case "candidate":
-          handleCandidate(e.data);
-          break;
-        case "ready":
-          if (pc) {
-            console.log(pc);
-            console.log("already in call, ignoring");
-            return;
-          }
-          makeCall();
-          break;
-        case "bye":
-          if (pc) {
-            hangup();
-          }
-          break;
-        default:
-          console.log("unhandled", e);
-          break;
+    socket.on("answer", (e) => {
+      if (!localStream) {
+        console.log("not ready yet");
+        return;
       }
+      handleAnswer(e);
+    });
+
+    socket.on("candidate", (e) => {
+      if (!localStream) {
+        console.log("not ready yet");
+        return;
+      }
+      handleCandidate(e);
+    });
+
+    socket.on("ready", () => {
+      if (!localStream) {
+        console.log("not ready yet");
+        return;
+      }
+      if (pc) {
+        console.log(pc);
+        console.log("already in call, ignoring");
+        return;
+      }
+      makeCall();
+    });
+
+    socket.on("bye", () => {
+      if (!localStream) {
+        console.log("not ready yet");
+        return;
+      }
+      if (pc) {
+        hangup();
+      }
+    });
+
+    return () => {
+      socket.off("offer");
+      socket.off("answer");
+      socket.off("candidate");
+      socket.off("ready");
+      socket.off("bye");
+    };
+  }, []);
+
+  useEffect(() => {
+    const listenSignalling = () => {
+      // if (!localStream) {
+      //   console.log("not ready yet");
+      //   return;
+      // }
+      // switch (e.data.type) {
+      //   // case "offer":
+      //   //   console.log("Offer this is.");
+      //   //   handleOffer(e.data);
+      //   //   break;
+      //   case "answer":
+      //     handleAnswer(e.data);
+      //     break;
+      //   case "candidate":
+      //     handleCandidate(e.data);
+      //     break;
+      //   case "ready":
+      //     if (pc) {
+      //       console.log(pc);
+      //       console.log("already in call, ignoring");
+      //       return;
+      //     }
+      //     makeCall();
+      //     break;
+      //   case "bye":
+      //     if (pc) {
+      //       hangup();
+      //     }
+      //     break;
+      //   default:
+      //     console.log("unhandled", e);
+      //     break;
+      // }
     };
 
     signalling.addEventListener("message", listenSignalling);
@@ -66,14 +123,16 @@ const App = () => {
       localVidRef.current.srcObject = localStream;
     }
 
-    signalling?.postMessage({ type: "ready" });
+    // signalling?.postMessage({ type: "ready" });
+    socket.emit("ready");
     setStartDisabled(true);
     setHangupDisabled(false);
   };
 
   const handleHangup = async () => {
     hangup();
-    signalling.postMessage({ type: "bye" });
+    // signalling.postMessage({ type: "bye" });
+    socket.emit("bye");
   };
 
   async function hangup() {
@@ -107,7 +166,8 @@ const App = () => {
         message.sdpMid = e.candidate.sdpMid;
         message.sdpMLineIndex = e.candidate.sdpMLineIndex;
       }
-      signalling?.postMessage(message);
+      socket.emit("candidate", message);
+      // signalling?.postMessage(message);
     };
 
     pc.ontrack = (e) => {
@@ -129,15 +189,15 @@ const App = () => {
     createPeerConnection();
 
     const offer = await pc?.createOffer();
-    console.log("Offer : ", offer);
     if (offer) {
-      signalling?.postMessage({ type: "mog" });
-      signalling?.postMessage({ type: "offer", sdp: offer.sdp });
+      // signalling?.postMessage({ type: "offer", sdp: offer.sdp });
+      socket.emit("offer", { type: "offer", sdp: offer.sdp });
       await pc?.setLocalDescription(offer);
     }
   }
 
   async function handleOffer(offer: RTCSessionDescriptionInit) {
+    console.log(offer);
     if (pc) {
       console.error("existing peer connection");
       return;
@@ -147,7 +207,8 @@ const App = () => {
     await pc.setRemoteDescription(offer);
 
     const answer = await pc.createAnswer();
-    signalling?.postMessage({ type: "answer", sdp: answer.sdp });
+    // signalling?.postMessage({ type: "answer", sdp: answer.sdp });
+    socket.emit("answer", { type: "answer", sdp: answer.sdp });
     await pc?.setLocalDescription(answer);
   }
 
