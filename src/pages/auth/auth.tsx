@@ -1,3 +1,4 @@
+import AuthForm from "@/components/auth/AuthForm";
 import authBg from "../../assets/auth-bg.jpg";
 
 const AuthPage = () => {
@@ -11,9 +12,7 @@ const AuthPage = () => {
         />
       </div>
       <div className="w-full md:w-1/2 bg-black flex items-center justify-center px-10">
-        <form className="bg-white w-full max-w-xl rounded-md py-4 px-6">
-          <h1 className="text-center font-bold text-3xl">Login</h1>
-        </form>
+        <AuthForm />
       </div>
     </div>
   );
