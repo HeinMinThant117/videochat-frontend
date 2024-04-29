@@ -1,10 +1,14 @@
 import { Phone, EllipsisVertical, Menu } from "lucide-react";
 
-const ChatSectionHeader = () => {
+interface ChatSectionHeaderProps {
+  handleSidebarToggle: () => void;
+}
+
+const ChatSectionHeader = ({ handleSidebarToggle }: ChatSectionHeaderProps) => {
   return (
     <div className="border-b p-2 flex items-center justify-between">
       <div className="flex items-center gap-x-3">
-        <Menu className="md:hidden" />
+        <Menu className="md:hidden" onClick={handleSidebarToggle} />
         <img
           className="rounded-full"
           src="https://api.dicebear.com/8.x/adventurer-neutral/svg?seed=Felix"
