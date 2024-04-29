@@ -1,3 +1,4 @@
+import ChatSection from "./components/ChatSection";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
 
@@ -7,7 +8,7 @@ const App = () => {
       <Navbar />
       <div className="flex flex-1">
         <Sidebar />
-        <div className="flex-1 border p-2">Chat Content</div>
+        <ChatSection />
       </div>
     </main>
   );
