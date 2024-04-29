@@ -6,7 +6,7 @@ interface ChatSectionHeaderProps {
 
 const ChatSectionHeader = ({ handleSidebarToggle }: ChatSectionHeaderProps) => {
   return (
-    <div className="border-b p-2 flex items-center justify-between">
+    <div className="flex items-center justify-between border-b p-2">
       <div className="flex items-center gap-x-3">
         <Menu className="md:hidden" onClick={handleSidebarToggle} />
         <img
@@ -17,7 +17,7 @@ const ChatSectionHeader = ({ handleSidebarToggle }: ChatSectionHeaderProps) => {
         />
         <p>James</p>
       </div>
-      <div className="flex items-center gap-x-3 mr-2">
+      <div className="mr-2 flex items-center gap-x-3">
         <Phone size={16} />
         <EllipsisVertical size={16} />
       </div>

@@ -1,6 +1,6 @@
 const SidebarItem = () => {
   return (
-    <div className="py-3 px-4 border-b flex items-center gap-x-3 bg-slate-50">
+    <div className="flex items-center gap-x-3 border-b bg-slate-50 px-4 py-3">
       <img
         className="rounded-full"
         src="https://api.dicebear.com/8.x/adventurer-neutral/svg?seed=Felix"
@@ -8,7 +8,7 @@ const SidebarItem = () => {
         height={48}
       />
       <div className="flex-1">
-        <div className="flex justify-between items-center">
+        <div className="flex items-center justify-between">
           <p>James</p>
           <p className="text-xs text-gray-400">1m</p>
         </div>
