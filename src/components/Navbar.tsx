@@ -1,5 +1,6 @@
+import { ChevronDown, CircleUser } from "lucide-react";
+
 import brandLogo from "../assets/logo.png";
-import { CircleUser, ChevronDown } from "lucide-react";
 
 const Navbar = () => {
   return (

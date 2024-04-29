@@ -1,5 +1,6 @@
-import SidebarItem from "./SidebarItem";
 import { X } from "lucide-react";
+
+import SidebarItem from "./SidebarItem";
 
 interface SidebarProps {
   isSidebarOpen: boolean;

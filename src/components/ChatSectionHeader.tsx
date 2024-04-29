@@ -1,4 +1,4 @@
-import { Phone, EllipsisVertical, Menu } from "lucide-react";
+import { EllipsisVertical, Menu, Phone } from "lucide-react";
 
 interface ChatSectionHeaderProps {
   handleSidebarToggle: () => void;

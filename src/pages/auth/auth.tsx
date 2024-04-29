@@ -1,4 +1,5 @@
 import AuthForm from "@/components/auth/AuthForm";
+
 import authBg from "../../assets/auth-bg.jpg";
 
 const AuthPage = () => {
