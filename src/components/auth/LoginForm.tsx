@@ -14,11 +14,11 @@ import {
 import { Input } from "../ui/input";
 
 const formSchema = z.object({
-  username: z.string().min(4, {
-    message: "Username must be at least 4 characters long",
+  email: z.string().email({
+    message: "Must be a valid email",
   }),
   password: z.string().min(4, {
-    message: "Password must be at least characters long",
+    message: "Password must be at 4 least characters long",
   }),
 });
 
@@ -26,7 +26,7 @@ const LoginForm = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
   });
@@ -40,12 +40,16 @@ const LoginForm = () => {
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
-          name="username"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Enter your username...." {...field} />
+                <Input
+                  type="email"
+                  placeholder="Enter your username...."
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
