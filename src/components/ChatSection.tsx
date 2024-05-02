@@ -11,8 +11,8 @@ const ChatSection = ({ handleSidebarToggle }: ChatSectionProps) => {
       <ChatSectionHeader handleSidebarToggle={handleSidebarToggle} />
 
       <div className="h-[calc(100vh_-_103px)] max-h-fit overflow-auto">
-        {[...Array(10)].map(() => (
-          <ChatMessage />
+        {[...Array(10)].map((_ele, index) => (
+          <ChatMessage key={index} />
         ))}
       </div>
     </div>

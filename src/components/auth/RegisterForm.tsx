@@ -1,8 +1,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
-import { Button } from "../ui/button";
+import axios from "@/lib/axios";
+import { APIResponse } from "@/types/common";
+import { LoginUser } from "@/types/User";
+
+import LoadingButton from "../LoadingButton";
 import {
   Form,
   FormControl,
@@ -12,6 +19,13 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Input } from "../ui/input";
+import { toast } from "../ui/use-toast";
+
+interface RegisterCredentials {
+  username: string;
+  email: string;
+  password: string;
+}
 
 const formSchema = z.object({
   username: z.string().min(4, {
@@ -26,6 +40,8 @@ const formSchema = z.object({
 });
 
 const RegisterForm = () => {
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -35,8 +51,27 @@ const RegisterForm = () => {
     },
   });
 
+  const registerMutation = useMutation({
+    mutationFn: async (registerCredentials: RegisterCredentials) => {
+      return await axios.post("/register", {
+        username: registerCredentials.username,
+        email: registerCredentials.email,
+        password: registerCredentials.password,
+      });
+    },
+    onSuccess: (response: AxiosResponse<APIResponse<LoginUser>>) => {
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      toast({ title: "Register Success" });
+      navigate("/");
+    },
+  });
+
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    registerMutation.mutate({
+      email: values.email,
+      username: values.username,
+      password: values.password,
+    });
   };
 
   return (
@@ -88,9 +123,12 @@ const RegisterForm = () => {
           )}
         />
 
-        <Button className="mt-4 w-full" type="submit">
-          Register
-        </Button>
+        <LoadingButton
+          title="Register"
+          loading={registerMutation.isPending}
+          className="mt-4 w-full"
+          type="submit"
+        />
       </form>
     </Form>
   );

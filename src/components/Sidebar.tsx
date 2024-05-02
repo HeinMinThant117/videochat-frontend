@@ -17,8 +17,8 @@ const Sidebar = ({ isSidebarOpen, handleSidebarToggle }: SidebarProps) => {
         <X onClick={handleSidebarToggle} size={20} className="mt-1 md:hidden" />
       </div>
       <div className=" h-[calc(100vh_-_104px)] overflow-auto">
-        {[...Array(20)].map(() => (
-          <SidebarItem />
+        {[...Array(20)].map((ele, index) => (
+          <SidebarItem key={index} />
         ))}
       </div>
     </div>
