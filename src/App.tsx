@@ -3,9 +3,12 @@ import { useState } from "react";
 import ChatSection from "./components/ChatSection";
 import Navbar from "./components/Navbar";
 import Sidebar from "./components/Sidebar";
+import useUser from "./hooks/useUser";
 
 const App = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  useUser();
 
   const handleSideBarToggle = () => {
     setIsSidebarOpen(!isSidebarOpen);
