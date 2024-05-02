@@ -1,17 +1,18 @@
 import AuthForm from "@/components/auth/AuthForm";
+
 import authBg from "../../assets/auth-bg.jpg";
 
 const AuthPage = () => {
   return (
     <div className="flex h-screen">
-      <div className="w-1/2 hidden md:block">
+      <div className="hidden w-1/2 md:block">
         <img
-          className="w-full h-full object-cover"
+          className="h-full w-full object-cover"
           src={authBg}
           alt="abstract login background art"
         />
       </div>
-      <div className="w-full md:w-1/2 bg-black flex items-center justify-center px-10">
+      <div className="flex w-full items-center justify-center bg-black px-10 md:w-1/2">
         <AuthForm />
       </div>
     </div>
